@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng - CellphoneS</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        .cart-wrapper { max-width: 800px; margin: 40px auto; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 50vh; }
+        .cart-title { text-align: center; color: #d70018; margin-bottom: 25px; text-transform: uppercase; }
+        .cart-summary { margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px; text-align: right; }
+        .btn-order { background: #d70018; color: white; padding: 15px 30px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; width: 100%; margin-top: 15px;}
+        .btn-order:hover { background: #b50014; }
+        .qty-btn { background: #f4f4f4; border: 1px solid #ddd; padding: 5px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .qty-btn:hover { background: #e0e0e0; }
+        
+        @media (max-width: 768px) {
+            .cart-item-row { flex-direction: column; align-items: flex-start !important; gap: 10px; }
+            .cart-item-row img { width: 60px !important; height: 60px !important; }
+            .cart-action { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        }
+    </style>
+</head>
+<body style="background-color: #f4f4f4;">
+
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo" onclick="window.location.href='index.html'">
+                <strong>cellphone<span>S</span></strong>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Bạn cần tìm gì?">
+            </div>
+            <div class="nav-item" onclick="window.location.href='index.html'">
+                📍 Sản phẩm<br><b>Mới nhất</b>
+            </div>
+            <div class="nav-item" onclick="window.location.href='gio-hang.html'" style="color: #ffd400;">
+                🛒 Giỏ<br><b>Hàng</b>
+            </div>
+            <div class="nav-item" onclick="window.location.href='dang-nhap.html'">
+                👤 Tài<br><b>Khoản</b>
+            </div>
+        </div>
+    </header>
+
+    <div class="cart-wrapper">
+        <h2 class="cart-title">Giỏ hàng của bạn</h2>
+        
+        <div id="cart-items-container"></div>
+
+        <div class="cart-summary">
+            <p style="font-size: 18px;">Tổng tiền tạm tính: <strong id="cart-total" style="color: #d70018; font-size: 24px;">0₫</strong></p>
+            <button class="btn-order" onclick="window.location.href='thanh-toan.html'">TIẾN HÀNH ĐẶT HÀNG</button>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h4>Tổng đài hỗ trợ</h4>
+                <ul>
+                    <li>Gọi mua hàng: <strong style="color: #d70018;">1800.2097</strong> (8h00 - 22h00)</li>
+                    <li>Hỗ trợ bảo hành: <strong>1800.2064</strong> (8h00 - 21h00)</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Chính sách</h4>
+                <ul>
+                    <li><a href="#">Chính sách bảo hành</a></li>
+                    <li><a href="#">Chính sách đổi trả</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Thông cửa hàng</h4>
+                <ul>
+                    <li><a href="#">Hệ thống 120 cửa hàng</a></li>
+                    <li><a href="#">Nội quy cửa hàng</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Đồ án Cơ sở lập trình Web - Nhóm 1.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+
+    <script>
+        // ĐÃ SỬA: Dùng đúng chìa khóa my_phone_cart
+        const STORAGE_KEY = 'my_phone_cart';
+        
+        function renderCart() {
+            // ĐÃ SỬA: Đọc dữ liệu từ STORAGE_KEY
+            let myCart = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            let container = document.getElementById('cart-items-container');
+            let totalEl = document.getElementById('cart-total');
+            let total = 0;
+
+            if (myCart.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding: 40px 0;">
+                        <img src="https://salt.tikicdn.com/desktop/img/mascot@2x.png" alt="Giỏ hàng trống" style="width: 150px; opacity: 0.5;">
+                        <p style="margin-top: 15px; color: #888;">Chưa có sản phẩm nào trong giỏ hàng</p>
+                        <a href="index.html" style="color: #d70018; font-weight: bold; text-decoration: none;">Về trang chủ mua sắm</a>
+                    </div>`;
+                totalEl.innerText = '0₫';
+                document.querySelector('.btn-order').style.display = 'none';
+                return;
+            }
+
+            document.querySelector('.btn-order').style.display = 'block';
+
+            let html = '';
+            myCart.forEach((item, index) => {
+                let itemTotal = item.price * item.qty;
+                total += itemTotal; 
+                
+                html += `
+                    <div class="cart-item-row" style="display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 20px 0;">
+                        <img src="${item.img}" style="width: 80px; height: 80px; object-fit: contain; border-radius: 5px; margin-right: 15px;">
+                        
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 5px 0; font-size: 15px; color: #333;">${item.name}</h4>
+                            <p style="color: #d70018; font-weight: bold; margin: 0;">${item.price.toLocaleString('vi-VN')}₫</p>
+                        </div>
+                        
+                        <div class="cart-action">
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                                <input type="text" value="${item.qty}" readonly style="width: 35px; text-align: center; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+                                <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                            </div>
+                            
+                            <button onclick="removeItem(${index})" style="margin-left: 20px; background: none; border: none; color: #888; cursor: pointer; text-decoration: underline; padding: 10px 0;">Xóa</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            totalEl.innerText = total.toLocaleString('vi-VN') + '₫';
+        }
+
+        function changeQty(index, amount) {
+            let myCart = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            myCart[index].qty += amount;
+            
+            if (myCart[index].qty <= 0) {
+                myCart.splice(index, 1);
+            }
+            
+            // ĐÃ SỬA: Lưu lại vào STORAGE_KEY
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(myCart)); 
+            renderCart(); 
+        }
+
+        function removeItem(index) {
+            if(confirm("Bạn có chắc muốn bỏ sản phẩm này khỏi giỏ?")) {
+                let myCart = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+                myCart.splice(index, 1);
+                // ĐÃ SỬA: Lưu lại vào STORAGE_KEY
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(myCart));
+                renderCart();
+            }
+        }
+
+        renderCart();
+    </script>
+</body>
+</html>
